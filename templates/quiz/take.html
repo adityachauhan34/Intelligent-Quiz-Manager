@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz in Progress{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold text-gray-900">{{ attempt.quiz.title }}</h1>
+                <p class="text-gray-600">{{ attempt.quiz.subcategory.category.name }} - {{ attempt.quiz.subcategory.name }}</p>
+            </div>
+            <div class="text-right">
+                <div id="timer" class="text-2xl font-mono font-bold text-primary-600">
+                    <span id="minutes">00</span>:<span id="seconds">00</span>
+                </div>
+                <p class="text-sm text-gray-600">Time Remaining</p>
+            </div>
+        </div>
+        
+        <div class="mt-4">
+            <div class="flex justify-between text-sm text-gray-600 mb-2">
+                <span>Progress</span>
+                <span id="progress-text">0 of {{ questions|length }}</span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-2">
+                <div id="progress-bar" class="bg-primary-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="questions-container">
+        {% for question in questions %}
+        <div id="question-{{ forloop.counter0 }}" class="question-slide {% if not forloop.first %}hidden{% endif %} bg-white rounded-2xl shadow-lg p-8 mb-6">
+            <div class="mb-6">
+                <span class="text-sm text-gray-500">Question {{ forloop.counter }} of {{ questions|length }}</span>
+                <h2 class="text-xl font-semibold text-gray-900 mt-2">{{ question.question_text }}</h2>
+            </div>
+            
+            <form action="{% url 'quiz:answer' attempt.id %}" method="POST" class="answer-form">
+                {% csrf_token %}
+                <input type="hidden" name="question_id" value="{{ question.id }}">
+                <input type="hidden" name="current_question" value="{{ forloop.counter0 }}">
+                <input type="hidden" name="time_remaining" id="time-remaining-{{ forloop.counter0 }}" value="{{ attempt.time_remaining }}">
+                
+                <div class="space-y-3">
+                    <label class="option-label block cursor-pointer">
+                        <input type="radio" name="answer" value="A" class="peer hidden" data-question-id="{{ question.id }}" {% if question.id in answered and answered|default_if_none:"" == 'A' %}checked{% endif %}>
+                        <div class="p-4 border-2 rounded-xl peer-checked:border-primary-600 peer-checked:bg-primary-50 hover:border-gray-400 transition">
+                            <span class="font-medium text-primary-600 mr-2">A.</span> {{ question.option_a }}
+                        </div>
+                    </label>
+                    <label class="option-label block cursor-pointer">
+                        <input type="radio" name="answer" value="B" class="peer hidden" data-question-id="{{ question.id }}" {% if question.id in answered and answered|default_if_none:"" == 'B' %}checked{% endif %}>
+                        <div class="p-4 border-2 rounded-xl peer-checked:border-primary-600 peer-checked:bg-primary-50 hover:border-gray-400 transition">
+                            <span class="font-medium text-primary-600 mr-2">B.</span> {{ question.option_b }}
+                        </div>
+                    </label>
+                    <label class="option-label block cursor-pointer">
+                        <input type="radio" name="answer" value="C" class="peer hidden" data-question-id="{{ question.id }}" {% if question.id in answered and answered|default_if_none:"" == 'C' %}checked{% endif %}>
+                        <div class="p-4 border-2 rounded-xl peer-checked:border-primary-600 peer-checked:bg-primary-50 hover:border-gray-400 transition">
+                            <span class="font-medium text-primary-600 mr-2">C.</span> {{ question.option_c }}
+                        </div>
+                    </label>
+                    <label class="option-label block cursor-pointer">
+                        <input type="radio" name="answer" value="D" class="peer hidden" data-question-id="{{ question.id }}" {% if question.id in answered and answered|default_if_none:"" == 'D' %}checked{% endif %}>
+                        <div class="p-4 border-2 rounded-xl peer-checked:border-primary-600 peer-checked:bg-primary-50 hover:border-gray-400 transition">
+                            <span class="font-medium text-primary-600 mr-2">D.</span> {{ question.option_d }}
+                        </div>
+                    </label>
+                </div>
+            </form>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="flex justify-between items-center bg-white rounded-xl shadow-sm p-4">
+        <button id="prev-btn" onclick="prevQuestion()" class="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition disabled:opacity-50" disabled>
+            <i data-feather="chevron-left" class="w-4 h-4 inline mr-1"></i> Previous
+        </button>
+        
+        <div class="flex space-x-2">
+            {% for question in questions %}
+            <button onclick="goToQuestion({{ forloop.counter0 }})" class="nav-dot w-8 h-8 rounded-full border-2 text-sm font-medium transition {% if forloop.first %}border-primary-600 bg-primary-600 text-white{% else %}border-gray-300 text-gray-600 hover:border-primary-600{% endif %}" id="nav-{{ forloop.counter0 }}">
+                {{ forloop.counter }}
+            </button>
+            {% endfor %}
+        </div>
+        
+        <div>
+            <button id="next-btn" onclick="nextQuestion()" class="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition">
+                Next <i data-feather="chevron-right" class="w-4 h-4 inline ml-1"></i>
+            </button>
+            <form action="{% url 'quiz:submit' attempt.id %}" method="POST" id="submit-form" class="hidden inline">
+                {% csrf_token %}
+                <input type="hidden" name="question_id" id="final-question-id">
+                <input type="hidden" name="answer" id="final-answer">
+                <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition">
+                    Submit Quiz <i data-feather="check" class="w-4 h-4 inline ml-1"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let currentQuestion = {{ attempt.current_question|default:0 }};
+    const totalQuestions = {{ questions|length }};
+    let timeRemaining = {{ attempt.time_remaining|default:600 }};
+    
+    function updateTimer() {
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        document.getElementById('minutes').textContent = minutes.toString().padStart(2, '0');
+        document.getElementById('seconds').textContent = seconds.toString().padStart(2, '0');
+        
+        if (timeRemaining <= 60) {
+            document.getElementById('timer').classList.add('text-red-600');
+        }
+        
+        if (timeRemaining > 0) {
+            timeRemaining--;
+            document.querySelectorAll('[id^="time-remaining-"]').forEach(el => el.value = timeRemaining);
+        } else {
+            document.getElementById('submit-form').submit();
+        }
+    }
+    
+    updateTimer();
+    setInterval(updateTimer, 1000);
+    
+    const answeredQuestions = {{ answered_json|safe }};
+    
+    Object.keys(answeredQuestions).forEach(questionId => {
+        const answer = answeredQuestions[questionId];
+        const radio = document.querySelector(`input[data-question-id="${questionId}"][value="${answer}"]`);
+        if (radio) radio.checked = true;
+    });
+    
+    function showQuestion(index) {
+        document.querySelectorAll('.question-slide').forEach((el, i) => {
+            el.classList.toggle('hidden', i !== index);
+        });
+        
+        document.querySelectorAll('.nav-dot').forEach((el, i) => {
+            if (i === index) {
+                el.classList.add('border-primary-600', 'bg-primary-600', 'text-white');
+                el.classList.remove('border-gray-300', 'text-gray-600');
+            } else {
+                el.classList.remove('border-primary-600', 'bg-primary-600', 'text-white');
+                el.classList.add('border-gray-300', 'text-gray-600');
+            }
+        });
+        
+        document.getElementById('prev-btn').disabled = index === 0;
+        
+        if (index === totalQuestions - 1) {
+            document.getElementById('next-btn').classList.add('hidden');
+            document.getElementById('submit-form').classList.remove('hidden');
+        } else {
+            document.getElementById('next-btn').classList.remove('hidden');
+            document.getElementById('submit-form').classList.add('hidden');
+        }
+        
+        updateProgress();
+    }
+    
+    function updateProgress() {
+        const answered = document.querySelectorAll('input[type="radio"]:checked').length;
+        document.getElementById('progress-text').textContent = `${answered} of ${totalQuestions}`;
+        document.getElementById('progress-bar').style.width = `${(answered / totalQuestions) * 100}%`;
+    }
+    
+    function nextQuestion() {
+        if (currentQuestion < totalQuestions - 1) {
+            saveCurrentAnswer();
+            currentQuestion++;
+            showQuestion(currentQuestion);
+        }
+    }
+    
+    function prevQuestion() {
+        if (currentQuestion > 0) {
+            saveCurrentAnswer();
+            currentQuestion--;
+            showQuestion(currentQuestion);
+        }
+    }
+    
+    function goToQuestion(index) {
+        saveCurrentAnswer();
+        currentQuestion = index;
+        showQuestion(currentQuestion);
+    }
+    
+    function saveCurrentAnswer() {
+        const form = document.querySelector(`#question-${currentQuestion} .answer-form`);
+        const selectedAnswer = form.querySelector('input[name="answer"]:checked');
+        if (selectedAnswer) {
+            const formData = new FormData(form);
+            formData.set('time_remaining', timeRemaining);
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+        }
+    }
+    
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', updateProgress);
+    });
+    
+    // Fix: Populate hidden fields before submitting and save the last answer
+    document.getElementById('submit-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Get current question's answer
+        const form = document.querySelector(`#question-${currentQuestion} .answer-form`);
+        const selectedAnswer = form.querySelector('input[name="answer"]:checked');
+        const questionId = form.querySelector('input[name="question_id"]').value;
+        
+        // Populate hidden fields
+        document.getElementById('final-question-id').value = questionId;
+        document.getElementById('final-answer').value = selectedAnswer ? selectedAnswer.value : '';
+        
+        // Save the current answer first via AJAX, then submit
+        if (selectedAnswer) {
+            const formData = new FormData(form);
+            formData.set('time_remaining', timeRemaining);
+            fetch(form.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).then(() => {
+                // Now submit the quiz
+                this.submit();
+            });
+        } else {
+            // No answer selected, just submit
+            this.submit();
+        }
+    });
+    
+    showQuestion(currentQuestion);
+    feather.replace();
+</script>
+{% endblock %}

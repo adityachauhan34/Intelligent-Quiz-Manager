@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Welcome back, {{ user.get_full_name|default:user.username }}!</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-2">Track your progress and continue your learning journey.</p>
+    </div>
+    
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center mr-4">
+                    <i data-feather="award" class="w-6 h-6 text-primary-600 dark:text-primary-400"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Completed Quizzes</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ completed_count }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center mr-4">
+                    <i data-feather="clock" class="w-6 h-6 text-yellow-600 dark:text-yellow-400"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">In Progress</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ incomplete_count }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mr-4">
+                    <i data-feather="percent" class="w-6 h-6 text-green-600 dark:text-green-400"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Average Score</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ avg_score }}%</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mr-4">
+                    <i data-feather="trophy" class="w-6 h-6 text-purple-600 dark:text-purple-400"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Your Rank</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white">#{{ user_rank }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid md:grid-cols-3 gap-6 mb-8">
+        <div class="bg-gradient-to-br from-orange-500 to-red-500 rounded-xl shadow-sm p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-orange-100">Current Streak</p>
+                    <p class="text-3xl font-bold mt-1">{{ current_streak }} days</p>
+                </div>
+                <div class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center">
+                    <i data-feather="zap" class="w-8 h-8"></i>
+                </div>
+            </div>
+            <p class="text-orange-100 text-sm mt-4">Longest: {{ longest_streak }} days</p>
+        </div>
+        
+        <div class="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-sm p-6 text-white">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-blue-100">Total Points</p>
+                    <p class="text-3xl font-bold mt-1">{{ total_points }}</p>
+                </div>
+                <div class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center">
+                    <i data-feather="star" class="w-8 h-8"></i>
+                </div>
+            </div>
+            <p class="text-blue-100 text-sm mt-4">Keep learning to earn more!</p>
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <a href="{% url 'quiz:browse' %}" class="flex items-center group h-full">
+                <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center mr-4 group-hover:bg-primary-200 dark:group-hover:bg-primary-800/30 transition">
+                    <i data-feather="play" class="w-6 h-6 text-primary-600 dark:text-primary-400"></i>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Ready for more?</p>
+                    <p class="text-lg font-semibold text-primary-600 dark:text-primary-400 group-hover:text-primary-700 dark:group-hover:text-primary-300">Start New Quiz</p>
+                </div>
+            </a>
+        </div>
+    </div>
+    
+    <div class="grid lg:grid-cols-2 gap-6 mb-8">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Leaderboard</h2>
+                <span class="text-sm text-gray-500 dark:text-gray-400">Top 10 Players</span>
+            </div>
+            
+            {% if rankings %}
+                <div class="space-y-3">
+                    {% for player in rankings %}
+                        <div class="flex items-center justify-between p-3 rounded-lg {% if player.is_current_user %}bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800{% else %}bg-gray-50 dark:bg-gray-700/50{% endif %}">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 flex items-center justify-center rounded-full {% if player.rank == 1 %}bg-yellow-400 text-yellow-900{% elif player.rank == 2 %}bg-gray-300 text-gray-700{% elif player.rank == 3 %}bg-orange-400 text-orange-900{% else %}bg-gray-200 dark:bg-gray-600 text-gray-600 dark:text-gray-300{% endif %} font-bold text-sm">
+                                    {% if player.rank <= 3 %}
+                                        <i data-feather="award" class="w-4 h-4"></i>
+                                    {% else %}
+                                        {{ player.rank }}
+                                    {% endif %}
+                                </div>
+                                <span class="font-medium {% if player.is_current_user %}text-primary-700 dark:text-primary-300{% else %}text-gray-900 dark:text-white{% endif %}">
+                                    {{ player.username }}
+                                    {% if player.is_current_user %}<span class="text-xs text-primary-500">(You)</span>{% endif %}
+                                </span>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                <span class="text-sm text-gray-600 dark:text-gray-400">{{ player.quizzes }} quizzes</span>
+                                <span class="px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-sm font-medium">{{ player.score_pct }}%</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-8">
+                    <i data-feather="users" class="w-12 h-12 text-gray-400 mx-auto mb-3"></i>
+                    <p class="text-gray-600 dark:text-gray-400">No rankings yet. Complete a quiz to get started!</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
+                <a href="{% url 'quiz:history' %}" class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium">View All</a>
+            </div>
+            
+            {% if recent_attempts %}
+                <div class="space-y-4">
+                    {% for attempt in recent_attempts %}
+                        <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                            <div>
+                                <p class="font-medium text-gray-900 dark:text-white">{{ attempt.quiz.title }}</p>
+                                <p class="text-sm text-gray-600 dark:text-gray-400">{{ attempt.started_at|date:"M d, Y H:i" }}</p>
+                            </div>
+                            <div class="flex items-center space-x-4">
+                                {% if attempt.status == 'completed' %}
+                                    <span class="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-sm font-medium">
+                                        {{ attempt.score }}/{{ attempt.total_questions }}
+                                    </span>
+                                    <a href="{% url 'quiz:results' attempt.id %}" class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
+                                        View Results
+                                    </a>
+                                {% else %}
+                                    <span class="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full text-sm font-medium">
+                                        In Progress
+                                    </span>
+                                    <a href="{% url 'quiz:take' attempt.id %}" class="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
+                                        Continue
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-12">
+                    <i data-feather="inbox" class="w-12 h-12 text-gray-400 mx-auto mb-4"></i>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">No quiz attempts yet. Start your first quiz!</p>
+                    <a href="{% url 'quiz:browse' %}" class="inline-block bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 transition">
+                        Browse Quizzes
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">How Scoring Works</h2>
+        <div class="grid md:grid-cols-3 gap-4">
+            <div class="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                <div class="flex items-center mb-2">
+                    <span class="px-2 py-1 bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200 rounded text-xs font-medium mr-2">Easy</span>
+                    <span class="text-green-700 dark:text-green-400 font-semibold">10 pts/correct</span>
+                </div>
+                <p class="text-sm text-green-600 dark:text-green-400">Great for beginners</p>
+            </div>
+            <div class="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
+                <div class="flex items-center mb-2">
+                    <span class="px-2 py-1 bg-yellow-200 dark:bg-yellow-800 text-yellow-800 dark:text-yellow-200 rounded text-xs font-medium mr-2">Medium</span>
+                    <span class="text-yellow-700 dark:text-yellow-400 font-semibold">15 pts/correct</span>
+                </div>
+                <p class="text-sm text-yellow-600 dark:text-yellow-400">1.5x multiplier</p>
+            </div>
+            <div class="p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                <div class="flex items-center mb-2">
+                    <span class="px-2 py-1 bg-red-200 dark:bg-red-800 text-red-800 dark:text-red-200 rounded text-xs font-medium mr-2">Hard</span>
+                    <span class="text-red-700 dark:text-red-400 font-semibold">20 pts/correct</span>
+                </div>
+                <p class="text-sm text-red-600 dark:text-red-400">2x multiplier</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

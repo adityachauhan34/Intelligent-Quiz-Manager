@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Profile Settings</h1>
+        <p class="text-gray-600 dark:text-gray-400 mt-2">Manage your account details and preferences</p>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-8">
+        <div class="md:col-span-1">
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 text-center">
+                <div class="relative inline-block">
+                    <img src="{{ profile.get_avatar_url }}" alt="Avatar" 
+                         class="w-32 h-32 rounded-full mx-auto border-4 border-primary-100 dark:border-primary-900 object-cover">
+                </div>
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-white mt-4">{{ user.username }}</h2>
+                <p class="text-gray-500 dark:text-gray-400">{{ user.email }}</p>
+                {% if user.first_name or user.last_name %}
+                    <p class="text-gray-600 dark:text-gray-300 mt-1">{{ user.first_name }} {{ user.last_name }}</p>
+                {% endif %}
+                
+                {% if profile.avatar_file or profile.avatar %}
+                <form method="POST" action="{% url 'accounts:remove_avatar' %}" class="mt-4">
+                    {% csrf_token %}
+                    <button type="submit" class="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium">
+                        <i data-feather="trash-2" class="w-4 h-4 inline mr-1"></i> Remove Avatar
+                    </button>
+                </form>
+                {% endif %}
+                
+                <div class="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="text-gray-500 dark:text-gray-400">Member since</span>
+                        <span class="font-medium text-gray-900 dark:text-white">{{ user.date_joined|date:"M Y" }}</span>
+                    </div>
+                    {% if profile.preferred_difficulty %}
+                    <div class="flex justify-between text-sm mb-2">
+                        <span class="text-gray-500 dark:text-gray-400">Preferred Difficulty</span>
+                        <span class="font-medium text-gray-900 dark:text-white capitalize">{{ profile.preferred_difficulty }}</span>
+                    </div>
+                    {% endif %}
+                    {% if profile.questions_per_quiz %}
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-500 dark:text-gray-400">Questions per Quiz</span>
+                        <span class="font-medium text-gray-900 dark:text-white">{{ profile.questions_per_quiz }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="md:col-span-2">
+            <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+                
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <i data-feather="user" class="w-5 h-5 mr-2 text-primary-600"></i>
+                        Personal Information
+                    </h3>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
+                        {{ user_form.username }}
+                        {% if user_form.username.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ user_form.username.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name</label>
+                            {{ user_form.first_name }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name</label>
+                            {{ user_form.last_name }}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
+                        {{ user_form.email }}
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Upload Avatar</label>
+                        {{ profile_form.avatar_file }}
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Upload an image file for your profile picture</p>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Avatar URL</label>
+                        {{ profile_form.avatar }}
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Or enter a URL to your profile picture (file upload takes priority)</p>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bio</label>
+                        {{ profile_form.bio }}
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <i data-feather="settings" class="w-5 h-5 mr-2 text-primary-600"></i>
+                        Quiz Preferences
+                    </h3>
+                    
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Preferred Difficulty</label>
+                            {{ profile_form.preferred_difficulty }}
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Questions per Quiz</label>
+                            {{ profile_form.questions_per_quiz }}
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Preferred Category</label>
+                        {{ profile_form.preferred_category }}
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Your preferred quiz category (optional)</p>
+                    </div>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <i data-feather="bell" class="w-5 h-5 mr-2 text-primary-600"></i>
+                        Preferences
+                    </h3>
+                    
+                    <div class="flex items-center">
+                        {{ profile_form.email_notifications }}
+                        <label class="ml-3 text-sm font-medium text-gray-700 dark:text-gray-300">Enable email notifications</label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-4">
+                    <a href="{% url 'quiz:dashboard' %}" class="px-6 py-3 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                        Cancel
+                    </a>
+                    <button type="submit" class="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-semibold transition">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-8">
+        <a href="{% url 'quiz:browse' %}" class="text-primary-600 hover:text-primary-700 font-medium mb-4 inline-flex items-center">
+            <i data-feather="arrow-left" class="w-4 h-4 mr-2"></i>
+            Back to Categories
+        </a>
+        <h1 class="text-3xl font-bold text-gray-900 mt-4">{{ category.name }}</h1>
+        <p class="text-gray-600 mt-2">{{ category.description }}</p>
+    </div>
+    
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for subcategory in category.subcategories.all %}
+        <div class="bg-white rounded-xl shadow-sm p-6 hover:shadow-lg transition">
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ subcategory.name }}</h3>
+            <p class="text-gray-600 mb-4">{{ subcategory.description }}</p>
+            <a href="{% url 'quiz:start' %}?subcategory_id={{ subcategory.id }}" class="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium">
+                Start Quiz
+                <i data-feather="arrow-right" class="w-4 h-4 ml-2"></i>
+            </a>
+        </div>
+        {% empty %}
+        <div class="col-span-3 text-center py-12">
+            <i data-feather="folder" class="w-12 h-12 text-gray-400 mx-auto mb-4"></i>
+            <p class="text-gray-600">No subcategories available in this category yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
