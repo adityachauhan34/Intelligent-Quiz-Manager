@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz Results{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="bg-white rounded-2xl shadow-lg p-8 text-center mb-8">
+        <div class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center {% if percentage >= 70 %}bg-green-100{% elif percentage >= 50 %}bg-yellow-100{% else %}bg-red-100{% endif %}">
+            <span class="text-4xl font-bold {% if percentage >= 70 %}text-green-600{% elif percentage >= 50 %}text-yellow-600{% else %}text-red-600{% endif %}">{{ percentage }}%</span>
+        </div>
+        
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Quiz Completed!</h1>
+        <p class="text-gray-600 mb-4">{{ attempt.quiz.title }}</p>
+        
+        <div class="flex justify-center space-x-8 text-center">
+            <div>
+                <p class="text-3xl font-bold text-primary-600">{{ attempt.score }}</p>
+                <p class="text-gray-600">Correct</p>
+            </div>
+            <div>
+                <p class="text-3xl font-bold text-gray-900">{{ attempt.total_questions }}</p>
+                <p class="text-gray-600">Total</p>
+            </div>
+        </div>
+        
+        <div class="mt-8 flex justify-center space-x-4">
+            <a href="{% url 'quiz:browse' %}" class="px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition">
+                Take Another Quiz
+            </a>
+            <a href="{% url 'quiz:history' %}" class="px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition">
+                View History
+            </a>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-2xl shadow-lg p-8">
+        <h2 class="text-xl font-bold text-gray-900 mb-6">Question Review</h2>
+        
+        <div class="space-y-6">
+            {% for item in results_data %}
+            <div class="border rounded-xl p-6 {% if item.is_correct %}border-green-200 bg-green-50{% else %}border-red-200 bg-red-50{% endif %}">
+                <div class="flex items-start justify-between mb-4">
+                    <h3 class="font-medium text-gray-900">Q{{ forloop.counter }}. {{ item.question.question_text }}</h3>
+                    {% if item.is_correct %}
+                        <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium flex-shrink-0 ml-4">Correct</span>
+                    {% else %}
+                        <span class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-medium flex-shrink-0 ml-4">Incorrect</span>
+                    {% endif %}
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-2 mb-4">
+                    <div class="p-3 rounded-lg {% if item.question.correct_answer == 'A' %}bg-green-200{% elif item.user_answer == 'A' %}bg-red-200{% else %}bg-white{% endif %}">
+                        <span class="font-medium">A.</span> {{ item.question.option_a }}
+                    </div>
+                    <div class="p-3 rounded-lg {% if item.question.correct_answer == 'B' %}bg-green-200{% elif item.user_answer == 'B' %}bg-red-200{% else %}bg-white{% endif %}">
+                        <span class="font-medium">B.</span> {{ item.question.option_b }}
+                    </div>
+                    <div class="p-3 rounded-lg {% if item.question.correct_answer == 'C' %}bg-green-200{% elif item.user_answer == 'C' %}bg-red-200{% else %}bg-white{% endif %}">
+                        <span class="font-medium">C.</span> {{ item.question.option_c }}
+                    </div>
+                    <div class="p-3 rounded-lg {% if item.question.correct_answer == 'D' %}bg-green-200{% elif item.user_answer == 'D' %}bg-red-200{% else %}bg-white{% endif %}">
+                        <span class="font-medium">D.</span> {{ item.question.option_d }}
+                    </div>
+                </div>
+                
+                {% if item.explanation %}
+                <div class="mt-4 p-4 bg-blue-50 rounded-lg">
+                    <p class="text-sm text-blue-700"><strong>Explanation:</strong> {{ item.explanation }}</p>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

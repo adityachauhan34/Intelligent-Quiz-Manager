@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Quizzes{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Browse Quiz Categories</h1>
+        <p class="text-gray-600 mt-2">Select a category to explore available quizzes.</p>
+    </div>
+    
+    <div class="grid md:grid-cols-3 gap-8">
+        {% for category in categories %}
+        <a href="{% url 'quiz:category' category.id %}" class="group">
+            <div class="bg-white rounded-2xl shadow-sm p-8 hover:shadow-lg transition transform hover:-translate-y-1">
+                <div class="w-14 h-14 bg-primary-100 rounded-xl flex items-center justify-center mb-6 group-hover:bg-primary-200 transition">
+                    <i data-feather="{{ category.icon }}" class="w-7 h-7 text-primary-600"></i>
+                </div>
+                <h3 class="text-2xl font-semibold text-gray-900 mb-3">{{ category.name }}</h3>
+                <p class="text-gray-600 mb-4">{{ category.description|default:"Explore quizzes in this category" }}</p>
+                <div class="flex items-center text-primary-600 font-medium">
+                    <span>{{ category.subcategories.count }} subcategories</span>
+                    <i data-feather="arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-1 transition"></i>
+                </div>
+            </div>
+        </a>
+        {% empty %}
+        <div class="col-span-3 text-center py-12">
+            <i data-feather="folder" class="w-12 h-12 text-gray-400 mx-auto mb-4"></i>
+            <p class="text-gray-600">No categories available yet.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

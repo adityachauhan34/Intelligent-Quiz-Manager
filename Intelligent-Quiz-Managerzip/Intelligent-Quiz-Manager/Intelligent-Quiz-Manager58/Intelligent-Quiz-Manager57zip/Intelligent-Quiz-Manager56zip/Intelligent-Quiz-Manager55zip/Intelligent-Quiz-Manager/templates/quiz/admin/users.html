@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-8 flex justify-between items-center">
+        <div>
+            <a href="{% url 'quiz:admin_dashboard' %}" class="text-primary-600 hover:text-primary-700 font-medium mb-2 inline-flex items-center">
+                <i data-feather="arrow-left" class="w-4 h-4 mr-2"></i> Back to Dashboard
+            </a>
+            <h1 class="text-3xl font-bold text-gray-900 mt-2">Manage Users</h1>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-4 text-left text-sm font-medium text-gray-600">Username</th>
+                    <th class="px-6 py-4 text-left text-sm font-medium text-gray-600">Email</th>
+                    <th class="px-6 py-4 text-left text-sm font-medium text-gray-600">Joined</th>
+                    <th class="px-6 py-4 text-left text-sm font-medium text-gray-600">Role</th>
+                    <th class="px-6 py-4 text-left text-sm font-medium text-gray-600">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for u in users %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 font-medium text-gray-900">{{ u.get_full_name|default:u.username }}</td>
+                    <td class="px-6 py-4 text-gray-600">{{ u.email }}</td>
+                    <td class="px-6 py-4 text-gray-600">{{ u.date_joined|date:"M d, Y" }}</td>
+                    <td class="px-6 py-4">
+                        {% if u.is_superuser %}
+                            <span class="px-2 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">Superuser</span>
+                        {% elif u.profile.is_quiz_admin %}
+                            <span class="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs font-medium">Admin</span>
+                        {% else %}
+                            <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">User</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 space-x-3">
+                        <a href="{% url 'quiz:edit_user' u.id %}" class="text-blue-600 hover:text-blue-700 font-medium">
+                            Edit
+                        </a>
+                        {% if u != user and not u.is_superuser %}
+                            <form action="{% url 'quiz:toggle_admin' u.id %}" method="POST" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="text-primary-600 hover:text-primary-700 font-medium">
+                                    {% if u.profile.is_quiz_admin %}Remove Admin{% else %}Make Admin{% endif %}
+                                </button>
+                            </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="px-6 py-8 text-center text-gray-600">No users found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

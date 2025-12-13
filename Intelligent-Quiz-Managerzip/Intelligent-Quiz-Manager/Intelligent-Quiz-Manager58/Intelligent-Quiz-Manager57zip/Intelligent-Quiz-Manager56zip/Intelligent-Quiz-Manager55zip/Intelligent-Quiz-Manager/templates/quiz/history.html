@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Quiz History{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Quiz History</h1>
+        <p class="text-gray-600 mt-2">View all your past quiz attempts and results.</p>
+    </div>
+    
+    {% if attempts %}
+    <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-4 text-left text-sm font-medium text-gray-600">Quiz</th>
+                    <th class="px-6 py-4 text-left text-sm font-medium text-gray-600">Category</th>
+                    <th class="px-6 py-4 text-left text-sm font-medium text-gray-600">Difficulty</th>
+                    <th class="px-6 py-4 text-left text-sm font-medium text-gray-600">Score</th>
+                    <th class="px-6 py-4 text-left text-sm font-medium text-gray-600">Date</th>
+                    <th class="px-6 py-4 text-left text-sm font-medium text-gray-600">Status</th>
+                    <th class="px-6 py-4 text-left text-sm font-medium text-gray-600">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for attempt in attempts %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4">
+                        <p class="font-medium text-gray-900">{{ attempt.quiz.title }}</p>
+                    </td>
+                    <td class="px-6 py-4 text-gray-600">{{ attempt.quiz.subcategory.category.name }}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium 
+                            {% if attempt.quiz.difficulty == 'easy' %}bg-green-100 text-green-700
+                            {% elif attempt.quiz.difficulty == 'medium' %}bg-yellow-100 text-yellow-700
+                            {% else %}bg-red-100 text-red-700{% endif %}">
+                            {{ attempt.quiz.difficulty|capfirst }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 font-medium text-gray-900">
+                        {% if attempt.status == 'completed' %}
+                            {{ attempt.score }}/{{ attempt.total_questions }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-gray-600">{{ attempt.started_at|date:"M d, Y H:i" }}</td>
+                    <td class="px-6 py-4">
+                        {% if attempt.status == 'completed' %}
+                            <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">Completed</span>
+                        {% else %}
+                            <span class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">In Progress</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if attempt.status == 'completed' %}
+                            <a href="{% url 'quiz:results' attempt.id %}" class="text-primary-600 hover:text-primary-700 font-medium">View Results</a>
+                        {% else %}
+                            <a href="{% url 'quiz:take' attempt.id %}" class="text-primary-600 hover:text-primary-700 font-medium">Continue</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="bg-white rounded-xl shadow-sm p-12 text-center">
+        <i data-feather="inbox" class="w-16 h-16 text-gray-400 mx-auto mb-4"></i>
+        <h2 class="text-xl font-semibold text-gray-900 mb-2">No Quiz History</h2>
+        <p class="text-gray-600 mb-6">You haven't taken any quizzes yet. Start your learning journey now!</p>
+        <a href="{% url 'quiz:browse' %}" class="inline-block bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition">
+            Browse Quizzes
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

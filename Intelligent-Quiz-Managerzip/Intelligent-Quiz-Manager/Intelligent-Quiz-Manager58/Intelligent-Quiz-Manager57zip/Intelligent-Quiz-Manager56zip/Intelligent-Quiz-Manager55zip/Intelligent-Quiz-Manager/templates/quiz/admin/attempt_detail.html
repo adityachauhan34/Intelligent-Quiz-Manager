@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}View Attempt - {{ attempt.user.get_full_name|default:attempt.user.username }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Attempt Details</h1>
+            <p class="text-gray-600 dark:text-gray-400 mt-2">Viewing attempt by {{ attempt.user.get_full_name|default:attempt.user.username }}</p>
+        </div>
+        <a href="{% url 'quiz:admin_attempts' %}" class="text-primary-600 hover:text-primary-700 font-medium">
+            <i data-feather="arrow-left" class="w-4 h-4 inline mr-1"></i> Back to Attempts
+        </a>
+    </div>
+    
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 mb-8">
+        <div class="grid md:grid-cols-2 gap-6">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">User Info</h3>
+                <div class="flex items-center">
+                    <img src="{{ attempt.user.profile.get_avatar_url }}" alt="Avatar" class="w-12 h-12 rounded-full mr-4 object-cover">
+                    <div>
+                        <div class="font-medium text-gray-900 dark:text-white">{{ attempt.user.get_full_name|default:attempt.user.username }}</div>
+                        <div class="text-gray-500 dark:text-gray-400">{{ attempt.user.email }}</div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quiz Info</h3>
+                <p class="text-gray-900 dark:text-white font-medium">{{ attempt.quiz.title }}</p>
+                <p class="text-gray-600 dark:text-gray-400">{{ attempt.quiz.subcategory.category.name }} / {{ attempt.quiz.subcategory.name }}</p>
+            </div>
+        </div>
+        
+        <div class="grid md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div class="text-center">
+                <div class="text-2xl font-bold text-primary-600">{{ percentage }}%</div>
+                <div class="text-gray-600 dark:text-gray-400 text-sm">Score</div>
+            </div>
+            <div class="text-center">
+                <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ attempt.score }}/{{ attempt.total_questions }}</div>
+                <div class="text-gray-600 dark:text-gray-400 text-sm">Correct</div>
+            </div>
+            <div class="text-center">
+                <span class="px-3 py-1 rounded-full text-sm font-medium 
+                    {% if attempt.status == 'completed' %}bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200
+                    {% else %}bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200{% endif %}">
+                    {{ attempt.status|title }}
+                </span>
+            </div>
+            <div class="text-center">
+                <div class="text-gray-900 dark:text-white">{{ attempt.started_at|date:"M d, Y" }}</div>
+                <div class="text-gray-600 dark:text-gray-400 text-sm">{{ attempt.started_at|time:"H:i" }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <h2 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Questions & Answers</h2>
+    
+    <div class="space-y-4">
+        {% for item in results_data %}
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
+            <div class="flex items-start justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900 dark:text-white">Q{{ forloop.counter }}. {{ item.question.question_text }}</h3>
+                {% if item.is_correct %}
+                    <span class="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200 px-2 py-1 rounded-full text-xs font-medium">Correct</span>
+                {% elif item.user_answer %}
+                    <span class="bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 px-2 py-1 rounded-full text-xs font-medium">Incorrect</span>
+                {% else %}
+                    <span class="bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300 px-2 py-1 rounded-full text-xs font-medium">Not Answered</span>
+                {% endif %}
+            </div>
+            
+            <div class="grid grid-cols-2 gap-2 mb-4">
+                <div class="p-3 rounded-lg border {% if item.question.correct_answer == 'A' %}border-green-500 bg-green-50 dark:bg-green-900/20{% elif item.user_answer == 'A' and not item.is_correct %}border-red-500 bg-red-50 dark:bg-red-900/20{% else %}border-gray-200 dark:border-gray-700{% endif %}">
+                    <span class="font-medium">A.</span> {{ item.question.option_a }}
+                </div>
+                <div class="p-3 rounded-lg border {% if item.question.correct_answer == 'B' %}border-green-500 bg-green-50 dark:bg-green-900/20{% elif item.user_answer == 'B' and not item.is_correct %}border-red-500 bg-red-50 dark:bg-red-900/20{% else %}border-gray-200 dark:border-gray-700{% endif %}">
+                    <span class="font-medium">B.</span> {{ item.question.option_b }}
+                </div>
+                <div class="p-3 rounded-lg border {% if item.question.correct_answer == 'C' %}border-green-500 bg-green-50 dark:bg-green-900/20{% elif item.user_answer == 'C' and not item.is_correct %}border-red-500 bg-red-50 dark:bg-red-900/20{% else %}border-gray-200 dark:border-gray-700{% endif %}">
+                    <span class="font-medium">C.</span> {{ item.question.option_c }}
+                </div>
+                <div class="p-3 rounded-lg border {% if item.question.correct_answer == 'D' %}border-green-500 bg-green-50 dark:bg-green-900/20{% elif item.user_answer == 'D' and not item.is_correct %}border-red-500 bg-red-50 dark:bg-red-900/20{% else %}border-gray-200 dark:border-gray-700{% endif %}">
+                    <span class="font-medium">D.</span> {{ item.question.option_d }}
+                </div>
+            </div>
+            
+            <div class="text-sm">
+                <span class="text-gray-600 dark:text-gray-400">User answered:</span>
+                <span class="font-medium text-gray-900 dark:text-white">{% if item.user_answer %}{{ item.user_answer }}{% else %}Not answered{% endif %}</span>
+                <span class="mx-2 text-gray-400">|</span>
+                <span class="text-gray-600 dark:text-gray-400">Correct answer:</span>
+                <span class="font-medium text-green-600 dark:text-green-400">{{ item.question.correct_answer }}</span>
+            </div>
+            
+            {% if item.explanation %}
+            <div class="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <p class="text-sm text-blue-800 dark:text-blue-200"><strong>Explanation:</strong> {{ item.explanation }}</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

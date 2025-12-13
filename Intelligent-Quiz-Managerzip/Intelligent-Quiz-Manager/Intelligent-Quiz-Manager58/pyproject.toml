@@ -1,0 +1,16 @@
+[project]
+name = "repl-nix-workspace"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "crispy-tailwind>=1.0.3",
+    "dj-database-url>=3.0.1",
+    "django>=5.2.9",
+    "django-crispy-forms>=2.5",
+    "google-genai>=1.55.0",
+    "openai>=2.9.0",
+    "pillow>=12.0.0",
+    "psycopg2-binary>=2.9.11",
+    "whitenoise>=6.11.0",
+]
