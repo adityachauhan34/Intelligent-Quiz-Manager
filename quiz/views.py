@@ -337,10 +337,19 @@ def results(request, attempt_id):
     
     percentage = round((attempt.score / attempt.total_questions) * 100) if attempt.total_questions > 0 else 0
     
+    time_taken = "N/A"
+    if attempt.completed_at and attempt.started_at:
+        duration = attempt.completed_at - attempt.started_at
+        total_seconds = int(duration.total_seconds())
+        minutes = total_seconds // 60
+        seconds = total_seconds % 60
+        time_taken = f"{minutes}m {seconds}s"
+    
     return render(request, 'quiz/results.html', {
         'attempt': attempt,
         'results_data': results_data,
         'percentage': percentage,
+        'time_taken': time_taken,
     })
 
 
